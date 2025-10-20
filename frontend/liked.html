@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Liked Songs - Ragnify</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-black text-white font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 bg-[#181818]">
+      <h1 class="text-2xl font-bold text-green-500">❤️ Liked Songs</h1>
+      <a href="index.html" class="text-gray-300 hover:text-white text-sm">
+        ← Back to Home
+      </a>
+    </header>
+
+    <!-- Songs list -->
+    <main id="likedList" class="p-4 flex-grow overflow-y-auto space-y-3">
+      <p class="text-gray-400 text-sm">Loading your liked songs...</p>
+    </main>
+
+    <!-- Player Footer (same as index) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-[#181818] text-white border-t border-gray-800 p-3 flex items-center justify-between z-50">
+      <div class="flex items-center space-x-3 w-1/4">
+        <img id="cover" src="https://i.imgur.com/LvQZV3y.jpeg" alt="Cover" class="w-14 h-14 rounded-md object-cover">
+        <div>
+          <h3 id="title" class="text-sm font-semibold">Select a Song</h3>
+          <p id="artist" class="text-xs text-gray-400">Artist</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center w-2/4">
+        <div class="flex items-center space-x-5 text-lg">
+          <i class="fas fa-step-backward cursor-pointer" onclick="prevSong()"></i>
+          <i id="playPause" class="fas fa-play-circle text-3xl text-green-500 cursor-pointer hover:scale-110 transition" onclick="togglePlay()"></i>
+          <i class="fas fa-step-forward cursor-pointer" onclick="nextSong()"></i>
+        </div>
+
+        <div class="flex items-center space-x-2 w-full mt-2">
+          <span id="currentTime" class="text-xs text-gray-400 w-10 text-right">0:00</span>
+          <div class="relative w-full h-1 bg-gray-700 rounded-full">
+            <div id="progress" class="absolute left-0 top-0 h-1 bg-green-500 rounded-full" style="width: 0%;"></div>
+          </div>
+          <span id="duration" class="text-xs text-gray-400 w-10">0:00</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4 w-1/4 justify-end pr-4 text-gray-400">
+        <i class="fas fa-volume-up"></i>
+        <input id="volume" type="range" min="0" max="1" step="0.01" value="1" class="w-24 accent-green-500">
+      </div>
+
+      <audio id="audio" src=""></audio>
+    </footer>
+
+    <script src="player.js"></script>
+    <script>
+      const API_BASE = window.API_BASE || "http://localhost:5000";
+      window.API_BASE = API_BASE;
+
+      const likedList = document.getElementById("likedList");
+      const loadingMessage = document.createElement("p");
+      loadingMessage.className = "text-gray-400 text-sm";
+      loadingMessage.textContent = "Loading your liked songs...";
+
+      let likedSongsCache = [];
+      let activeRowId = null;
+
+      if (likedList) {
+        likedList.innerHTML = "";
+        likedList.appendChild(loadingMessage);
+      }
+
+      function normalizeLikedSong(rawSong, index = 0) {
+        if (!rawSong || typeof rawSong !== "object") return null;
+        const coverUrl = rawSong.coverUrl || rawSong.cover || rawSong.image || "https://i.ibb.co/2sVxXgM/default-cover.png";
+        const audioUrl = rawSong.audioUrl || rawSong.src || "";
+        const id = rawSong._id || rawSong.id || rawSong.songId || `liked-${index}-${audioUrl}`;
+        return {
+          ...rawSong,
+          id,
+          title: rawSong.title || "Untitled",
+          artist: rawSong.artist || "Unknown Artist",
+          duration: Number(rawSong.duration) || 0,
+          cover: coverUrl,
+          coverUrl,
+          audioUrl,
+          src: audioUrl
+        };
+      }
+
+      function clearActiveRow() {
+        if (!activeRowId) return;
+        const previous = likedList?.querySelector(`[data-song-id="${activeRowId}"]`);
+        if (previous) {
+          previous.classList.remove("ring-2", "ring-green-500");
+        }
+        activeRowId = null;
+      }
+
+      function markActiveRow(songId) {
+        clearActiveRow();
+        if (!songId) return;
+        const next = likedList?.querySelector(`[data-song-id="${songId}"]`);
+        if (next) {
+          next.classList.add("ring-2", "ring-green-500");
+          activeRowId = songId;
+        }
+      }
+
+      function createLikedRow(song) {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "w-full flex items-center justify-between bg-gray-800 rounded-md p-3 hover:bg-gray-700 cursor-pointer text-left";
+        row.dataset.songId = song.id;
+
+        const info = document.createElement("div");
+        const title = document.createElement("p");
+        title.className = "font-semibold";
+        title.textContent = song.title;
+        const artist = document.createElement("p");
+        artist.className = "text-gray-400 text-sm";
+        artist.textContent = song.artist;
+        info.appendChild(title);
+        info.appendChild(artist);
+
+        const playIcon = document.createElement("i");
+        playIcon.className = "fas fa-play text-green-500";
+
+        row.appendChild(info);
+        row.appendChild(playIcon);
+
+        row.addEventListener("click", () => {
+          if (!song.id || !likedSongsCache.length || typeof Player === "undefined") return;
+          if (typeof Player.setQueue === "function") {
+            Player.setQueue(likedSongsCache, { selectFirst: false });
+          }
+          if (typeof Player.playSongById === "function") {
+            Player.playSongById(song.id);
+          }
+        });
+
+        return row;
+      }
+
+      function renderLikedSongs(songs) {
+        likedSongsCache = Array.isArray(songs) ? songs : [];
+        activeRowId = null;
+        if (!likedList) return;
+        likedList.innerHTML = "";
+
+        if (!likedSongsCache.length) {
+          const message = document.createElement("p");
+          message.className = "text-gray-400 text-sm";
+          message.textContent = "You haven’t liked any songs yet.";
+          likedList.appendChild(message);
+          return;
+        }
+
+        likedSongsCache.forEach(song => {
+          likedList.appendChild(createLikedRow(song));
+        });
+
+        if (typeof Player !== "undefined" && Player.setQueue) {
+          Player.setQueue(likedSongsCache, { selectFirst: false });
+          const currentSong = Player.getCurrentSong ? Player.getCurrentSong() : null;
+          markActiveRow(currentSong?.id);
+        }
+      }
+
+      async function fetchLikedSongs() {
+        try {
+          const response = await fetch(`${API_BASE}/api/liked`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch liked songs: ${response.status}`);
+          }
+          const data = await response.json();
+          const mapped = (Array.isArray(data) ? data : []).map((song, index) => normalizeLikedSong(song, index)).filter(Boolean);
+          renderLikedSongs(mapped);
+        } catch (error) {
+          console.error(error);
+          if (likedList) {
+            likedList.innerHTML = "";
+            const message = document.createElement("p");
+            message.className = "text-red-400 text-sm";
+            message.textContent = "Error loading liked songs.";
+            likedList.appendChild(message);
+          }
+        }
+      }
+
+      window.addEventListener("player:track-changed", event => {
+        markActiveRow(event.detail?.song?.id);
+      });
+
+      if (typeof Player !== "undefined" && Player.init) {
+        Player.init()
+          .then(() => Player.refreshLikedSongs(false))
+          .then(mapped => {
+            if (Array.isArray(mapped) && mapped.length) {
+              renderLikedSongs(mapped);
+            } else {
+              fetchLikedSongs();
+            }
+          })
+          .catch(error => {
+            console.error(error);
+            fetchLikedSongs();
+          });
+      } else {
+        console.warn("Player module is not available. Falling back to manual fetch.");
+        fetchLikedSongs();
+      }
+    </script>
+  </body>
+</html>

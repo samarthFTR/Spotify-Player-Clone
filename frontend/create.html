@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black text-white">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spotify Create Playlist</title>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="relative min-h-screen bg-black text-white font-sans">
+
+    <!-- Hero Background Image -->
+    <div class="absolute inset-0 z-0">
+      <img src="your-hero-image.jpg" alt="Hero" class="w-full h-full object-cover blur-sm brightness-50" />
+    </div>
+
+    <!-- Foreground Content -->
+    <div class="relative z-10 p-4 space-y-4 pt-20">
+      <!-- Spotify Premium -->
+      <div class="flex items-center space-x-2 text-gray-300">
+        <i class="fab fa-spotify text-white"></i>
+        <span class="text-sm font-semibold">Premium</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-3xl font-bold leading-snug">
+        Listen without limits. Try 4 months of Premium Individual for free.
+      </h1>
+
+      <!-- Limited Offer Box -->
+      <div class="bg-white/10 text-white px-3 py-2 rounded-md w-max text-sm font-semibold flex items-center space-x-2">
+        <i class="fas fa-bell text-blue-400"></i>
+        <span>Limited time offer</span>
+      </div>
+
+      <!-- Subtext -->
+      <p class="text-gray-400 text-sm">
+        You can’t upgrade to Premium in the app. We know, it's not ideal.
+      </p>
+    </div>
+
+    <!-- Bottom Sheet Modal -->
+    <div class="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] rounded-t-2xl px-4 py-6 z-20" style="margin: 0 20px 70px 20px; height: 300px;">
+      <div class="space-y-6">
+        <!-- Playlist Option -->
+        <div class="flex items-center space-x-4">
+          <div class="bg-gray-700 p-3 rounded-full">
+            <i class="fas fa-music text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="font-semibold text-white">Playlist</h2>
+            <p class="text-sm text-gray-400">Build a playlist with songs, or episodes</p>
+          </div>
+        </div>
+
+        <!-- Collaborative Playlist -->
+        <div class="flex items-center space-x-4">
+          <div class="bg-gray-700 p-3 rounded-full">
+            <i class="fas fa-user-friends text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="font-semibold text-white">Collaborative Playlist</h2>
+            <p class="text-sm text-gray-400">Invite friends and create something together</p>
+          </div>
+        </div>
+
+        <!-- Blend -->
+        <div class="flex items-center space-x-4" style="margin-bottom: 80px;">
+          <div class="bg-gray-700 p-3 rounded-full">
+            <i class="fas fa-ring text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="font-semibold text-white">Blend</h2>
+            <p class="text-sm text-gray-400">Combine tastes in a shared playlist with friends</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     <!-- Bottom Navigation -->
+  <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 text-white text-xs py-2 px-6 flex justify-between items-center">
+    <div class="flex flex-col items-center"><i class="fas fa-home text-xl"></i><span><a href="index.html">Home</a></span></div>
+    <div class="flex flex-col items-center"><i class="fas fa-search text-xl"></i><span><a href="search.html">Search</a></span></div>
+    <div class="flex flex-col items-center"><i class="fas fa-bars text-xl"></i><span><a href="library.html">Your Library</a></span></div>
+    <div class="flex flex-col items-center"><i class="fab fa-spotify text-xl"></i><span><a href="premium.html">Premium</a></span></div>
+    <div class="flex flex-col items-center"><i class="fas fa-plus text-xl"></i><span><a href="create.html">Create</a></span></div>
+  </div>
+
+  </body>
+</html>
