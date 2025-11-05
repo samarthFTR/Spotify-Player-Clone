@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE || "http://localhost:5000";
+const API_BASE = window.API_BASE || "https://spotify-player-clone-production.up.railway.app";
 window.API_BASE = API_BASE;
 
 const DEFAULT_COVER = "https://i.ibb.co/2sVxXgM/default-cover.png";
