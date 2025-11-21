@@ -1,7 +1,7 @@
 const API_BASE = window.API_BASE || "https://spotify-player-clone-production.up.railway.app";
 window.API_BASE = API_BASE;
 
-const DEFAULT_COVER = "https://images.unsplash.com/photo-1464375117522-1311d6a5b81a?auto=format&fit=crop&w=600&q=80";
+/*const DEFAULT_COVER = "https://images.unsplash.com/photo-1464375117522-1311d6a5b81a?auto=format&fit=crop&w=600&q=80";
 const FALLBACK_SONGS_DATA = [
   {
     id: "fallback-1",
@@ -53,7 +53,7 @@ const FALLBACK_SONGS_DATA = [
     duration: 311,
     order: 5
   }
-];
+];*/
 
 const songsCarousel = document.getElementById("songsCarousel");
 const likedCard = document.getElementById("likedCard");
