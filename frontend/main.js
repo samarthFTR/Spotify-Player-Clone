@@ -1,7 +1,7 @@
 const API_BASE = window.API_BASE || "https://spotify-player-clone-production.up.railway.app";
 window.API_BASE = API_BASE;
 
-const DEFAULT_COVER = "https://i.ibb.co/2sVxXgM/default-cover.png";
+const DEFAULT_COVER = "https://images.unsplash.com/photo-1464375117522-1311d6a5b81a?auto=format&fit=crop&w=600&q=80";
 const FALLBACK_SONGS_DATA = [
   {
     id: "fallback-1",
@@ -56,11 +56,23 @@ const FALLBACK_SONGS_DATA = [
 ];
 
 const songsCarousel = document.getElementById("songsCarousel");
+const likedCard = document.getElementById("likedCard");
+const likedSummaryCount = document.getElementById("likedSummaryCount");
+const likedSummarySubtitle = document.getElementById("likedSummarySubtitle");
+const searchForm = document.getElementById("songSearchForm");
+const searchInput = document.getElementById("songSearchInput");
+const searchClearButton = document.getElementById("songSearchClear");
+if (searchClearButton) {
+  searchClearButton.classList.add("hidden");
+}
 const loadingMessage = document.createElement("p");
 loadingMessage.className = "text-gray-400 text-sm";
 loadingMessage.textContent = "Loading songs...";
 
 let songsCache = [];
+let originalSongs = [];
+let searchAbortController = null;
+let currentSearchTerm = "";
 let activeCardId = null;
 
 if (songsCarousel) {
@@ -85,6 +97,11 @@ function createSongCard(song) {
   coverImg.src = coverSrc;
   coverImg.alt = song.title;
   coverImg.className = "w-full h-36 rounded-md object-cover mb-3";
+  coverImg.loading = "lazy";
+  coverImg.addEventListener("error", () => {
+    if (coverImg.src === DEFAULT_COVER) return;
+    coverImg.src = DEFAULT_COVER;
+  });
 
   const titleEl = document.createElement("h3");
   titleEl.className = "font-semibold text-white truncate";
@@ -134,35 +151,43 @@ function markActiveCard(songId) {
   activeCardId = songId || null;
 }
 
-async function loadSongs() {
+async function loadSongs(query, options = {}) {
   if (!songsCarousel) return;
   try {
-    const response = await fetch(`${API_BASE}/api/songs`);
+    const url = new URL(`${API_BASE}/api/songs`);
+    if (query) {
+      url.searchParams.set("search", query.trim());
+    }
+    const response = await fetch(url.toString());
     if (!response.ok) {
       throw new Error(`Failed to fetch songs: ${response.status}`);
     }
     const data = await response.json();
     const mappedSongs = mapSongs(data);
     if (mappedSongs.length) {
-      renderSongs(mappedSongs);
+      renderSongs(mappedSongs, options);
+      if (!query) {
+        originalSongs = mappedSongs;
+      }
       return;
     }
-    renderSongs(mapSongs(FALLBACK_SONGS_DATA));
+    renderSongs(mapSongs(FALLBACK_SONGS_DATA), options);
   } catch (error) {
     console.error(error);
-    renderSongs(mapSongs(FALLBACK_SONGS_DATA));
+    renderSongs(mapSongs(FALLBACK_SONGS_DATA), options);
   }
 }
 
-if (typeof Player !== "undefined" && Player.init) {
-  Player.init()
-    .then(loadSongs)
-    .catch(error => {
-      console.error(error);
-      loadSongs();
-    });
-} else {
-  console.warn("Player module is not available.");
+function filterSongsByTerm(term) {
+  const q = (term || "").trim().toLowerCase();
+  const source = originalSongs.length ? originalSongs : songsCache;
+  if (!q) return source;
+  return source.filter(song => {
+    const haystack = [song.title, song.artist, song.album]
+      .filter(Boolean)
+      .map(value => value.toLowerCase());
+    return haystack.some(value => value.includes(q));
+  });
 }
 
 window.addEventListener("player:track-changed", event => {
@@ -195,16 +220,17 @@ function normalizeSong(rawSong, index = 0) {
   };
 }
 
-function renderSongs(songs) {
+function renderSongs(songs, options = {}) {
+  const emptyText = options.emptyMessage;
   songsCache = songs;
   activeCardId = null;
   if (!songsCarousel) return;
   songsCarousel.innerHTML = "";
   if (!songsCache.length) {
-    const emptyMessage = document.createElement("p");
-    emptyMessage.className = "text-gray-400 text-sm";
-    emptyMessage.textContent = "No songs available right now.";
-    songsCarousel.appendChild(emptyMessage);
+    const emptyMessageEl = document.createElement("p");
+    emptyMessageEl.className = "text-gray-400 text-sm";
+    emptyMessageEl.textContent = emptyText || "No songs available right now.";
+    songsCarousel.appendChild(emptyMessageEl);
     if (typeof Player !== "undefined" && Player.setQueue) {
       Player.setQueue([], { selectFirst: false });
     }
@@ -220,3 +246,123 @@ function renderSongs(songs) {
     Player.setQueue(songsCache, { selectFirst: false });
   }
 }
+
+async function searchSongs(term) {
+  const query = (term || "").trim();
+  currentSearchTerm = query;
+  syncSearchClearButton();
+  if (!query) {
+    renderSongs(originalSongs.length ? originalSongs : songsCache, { emptyMessage: "No songs available right now." });
+    return;
+  }
+  const fallbackToLocalResults = () => {
+    const filtered = filterSongsByTerm(query);
+    renderSongs(filtered, { emptyMessage: "No songs match your search." });
+  };
+
+  if (searchAbortController) {
+    searchAbortController.abort();
+  }
+
+  searchAbortController = new AbortController();
+  try {
+    const url = new URL(`${API_BASE}/api/songs/search`);
+    url.searchParams.set("q", query);
+    const response = await fetch(url.toString(), { signal: searchAbortController.signal });
+    if (!response.ok) throw new Error("Failed search request");
+    const data = await response.json();
+    const mapped = mapSongs(data);
+    if (mapped.length) {
+      renderSongs(mapped, { emptyMessage: "No songs match your search." });
+    } else {
+      fallbackToLocalResults();
+    }
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    console.error(error);
+    fallbackToLocalResults();
+  }
+}
+
+function syncSearchClearButton() {
+  if (!searchInput || !searchClearButton) return;
+  const shouldShow = Boolean(searchInput.value && searchInput.value.trim().length);
+  searchClearButton.classList.toggle("hidden", !shouldShow);
+}
+
+if (searchForm && searchInput) {
+  searchForm.addEventListener("submit", event => {
+    event.preventDefault();
+    searchSongs(searchInput.value);
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    syncSearchClearButton();
+    if (!searchInput.value) {
+      searchSongs("");
+    }
+  });
+}
+
+if (searchClearButton) {
+  searchClearButton.addEventListener("click", () => {
+    searchInput.value = "";
+    searchSongs("");
+    searchInput.focus();
+  });
+}
+
+function updateLikedSummary(total, { loading = false } = {}) {
+  if (!likedSummaryCount || !likedSummarySubtitle) return;
+  if (loading) {
+    likedSummaryCount.textContent = "--";
+    likedSummarySubtitle.textContent = "Fetching your favorites...";
+    return;
+  }
+  const count = typeof total === "number" ? total : 0;
+  likedSummaryCount.textContent = count.toString().padStart(2, "0");
+  likedSummarySubtitle.textContent = count
+    ? "Tap to keep vibing with your picks"
+    : "Save songs to build this playlist";
+}
+
+async function fetchLikedSummary() {
+  try {
+    const response = await fetch(`${API_BASE}/api/liked`);
+    if (!response.ok) throw new Error(`Failed to fetch liked songs: ${response.status}`);
+    const data = await response.json();
+    updateLikedSummary(Array.isArray(data) ? data.length : 0);
+  } catch (error) {
+    console.error(error);
+    updateLikedSummary(0);
+  }
+}
+
+function bootstrapLikedSummary() {
+  if (!likedSummaryCount) return;
+  updateLikedSummary(0, { loading: true });
+  fetchLikedSummary();
+}
+
+window.addEventListener("player:liked-updated", event => {
+  const liked = event.detail?.liked || [];
+  updateLikedSummary(liked.length);
+});
+
+async function initializeApp() {
+  bootstrapLikedSummary();
+  if (typeof Player !== "undefined" && Player.init) {
+    try {
+      await Player.init();
+    } catch (error) {
+      console.error(error);
+    }
+  } else {
+    console.warn("Player module is not available.");
+  }
+  await loadSongs();
+}
+
+initializeApp();
