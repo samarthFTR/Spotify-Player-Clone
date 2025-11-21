@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE = window.API_BASE || "http://localhost:5000";
+  const API_BASE = window.API_BASE || "https://spotify-player-clone-production.up.railway.app";
   const FALLBACK_COVER = "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80";
 
   const state = {
