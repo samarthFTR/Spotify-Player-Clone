@@ -64,6 +64,76 @@
   <i class="fa-solid fa-list-ul text-xl cursor-pointer"
    onclick="openPlaylistPicker()"></i>
 
+  <!-- Playlist Picker Modal -->
+  <div id="playlistPickerModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-gradient-to-b from-gray-900 to-black w-full sm:max-w-lg sm:rounded-2xl overflow-hidden shadow-2xl transform transition-all">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i class="fa-solid fa-list-ul text-white text-xl"></i>
+          <h2 class="text-white text-xl font-bold">Add to Playlist</h2>
+        </div>
+        <button onclick="closePlaylistPicker()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Current Song Info -->
+      <div id="playlistPickerSongInfo" class="px-6 py-4 border-b border-gray-800">
+        <div class="flex items-center space-x-4">
+          <img id="pickerSongCover" src="" alt="" class="w-14 h-14 rounded-md shadow-lg">
+          <div class="flex-1 min-w-0">
+            <p id="pickerSongTitle" class="text-white font-semibold truncate">Song Title</p>
+            <p id="pickerSongArtist" class="text-gray-400 text-sm truncate">Artist</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playlists List -->
+      <div id="playlistPickerList" class="px-6 py-4 max-h-80 overflow-y-auto custom-scrollbar space-y-2">
+        <p class="text-gray-400 text-sm text-center py-8">Loading playlists...</p>
+      </div>
+
+      <!-- Create New Playlist Option -->
+      <div class="px-6 py-4 border-t border-gray-800">
+        <button onclick="createNewPlaylistFromPicker()" class="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-3 rounded-full transition-all shadow-lg flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-plus"></i>
+          <span>Create New Playlist</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add custom scrollbar styling -->
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1a1a1a;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #5a5a5a;
+    }
+    @keyframes fade-in-down {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+    .animate-fade-in-down {
+      animation: fade-in-down 0.3s ease-out;
+    }
+  </style>
 
 </body>
 </html>

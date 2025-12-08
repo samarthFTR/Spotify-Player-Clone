@@ -393,60 +393,210 @@ async function updateLikedCount() {
 }
 // === PLAYLIST PICKER MODAL ===
 
-const playlistPickerModal = document.getElementById("playlistPickerModal");
-const playlistPickerList = document.getElementById("playlistPickerList");
+let playlistPickerModal = null;
+let playlistPickerList = null;
+let pickerSongCover = null;
+let pickerSongTitle = null;
+let pickerSongArtist = null;
 
-// open modal
-function openPlaylistPicker() {
-  if (!currentSong || !currentSong._id) {
-    alert("No song is currently playing.");
+function initPlaylistPicker() {
+  playlistPickerModal = document.getElementById("playlistPickerModal");
+  playlistPickerList = document.getElementById("playlistPickerList");
+  pickerSongCover = document.getElementById("pickerSongCover");
+  pickerSongTitle = document.getElementById("pickerSongTitle");
+  pickerSongArtist = document.getElementById("pickerSongArtist");
+}
+
+// Open modal with current song info
+window.openPlaylistPicker = async function() {
+  if (!playlistPickerModal) initPlaylistPicker();
+  
+  const currentSong = window.Player ? window.Player.getCurrentSong() : null;
+  
+  if (!currentSong || !currentSong.id) {
+    showNotification("No song is currently playing", "error");
     return;
   }
-  loadPlaylistsForPicker();
+  
+  // Update song info in modal
+  if (pickerSongCover) pickerSongCover.src = currentSong.cover || FALLBACK_COVER;
+  if (pickerSongTitle) pickerSongTitle.textContent = currentSong.title || "Unknown";
+  if (pickerSongArtist) pickerSongArtist.textContent = currentSong.artist || "Unknown Artist";
+  
+  // Show modal
   playlistPickerModal.classList.remove("hidden");
-}
+  
+  // Load playlists
+  await loadPlaylistsForPicker(currentSong.id);
+};
 
-// close modal
-function closePlaylistPicker() {
-  playlistPickerModal.classList.add("hidden");
-}
+// Close modal
+window.closePlaylistPicker = function() {
+  if (playlistPickerModal) {
+    playlistPickerModal.classList.add("hidden");
+  }
+};
 
-// load playlists to choose from
-async function loadPlaylistsForPicker() {
-  playlistPickerList.innerHTML = "<p class='text-gray-400 text-sm'>Loading...</p>";
+// Load playlists to choose from
+async function loadPlaylistsForPicker(currentSongId) {
+  if (!playlistPickerList) return;
+  
+  playlistPickerList.innerHTML = `
+    <div class="flex items-center justify-center py-8">
+      <i class="fa-solid fa-spinner fa-spin text-green-500 text-3xl"></i>
+    </div>
+  `;
 
-  const res = await fetch(`${API_BASE}/playlists`);
-  const playlists = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/playlists`);
+    if (!res.ok) throw new Error("Failed to fetch playlists");
+    
+    const playlists = await res.json();
 
-  playlistPickerList.innerHTML = "";
-
-  playlists.forEach(pl => {
-    playlistPickerList.innerHTML += `
-      <div class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-lg cursor-pointer"
-           onclick="addSongToPlaylist('${pl._id}', '${currentSong._id}')">
-
-        <div>
-          <p class="font-semibold">${pl.name}</p>
-          <p class="text-gray-400 text-xs">${pl.songs.length} songs</p>
+    if (!playlists || playlists.length === 0) {
+      playlistPickerList.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fa-solid fa-folder-open text-gray-600 text-4xl mb-3"></i>
+          <p class="text-gray-400 text-sm">No playlists yet</p>
+          <p class="text-gray-500 text-xs mt-1">Create one to get started!</p>
         </div>
+      `;
+      return;
+    }
 
-        <i class="fa-solid fa-plus text-green-400 text-xl"></i>
+    playlistPickerList.innerHTML = "";
+
+    playlists.forEach(pl => {
+      const isInPlaylist = pl.songs && pl.songs.includes(currentSongId);
+      
+      const playlistCard = document.createElement("div");
+      playlistCard.className = `
+        flex items-center justify-between 
+        bg-gray-800 hover:bg-gray-700 
+        p-4 rounded-xl cursor-pointer 
+        transition-all duration-200 
+        border-2 border-transparent
+        ${isInPlaylist ? 'border-green-500 bg-opacity-50' : ''}
+      `;
+      
+      playlistCard.onclick = () => addSongToPlaylist(pl._id, currentSongId, isInPlaylist);
+      
+      playlistCard.innerHTML = `
+        <div class="flex items-center space-x-3 flex-1">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-green-400 rounded-lg flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-music text-white text-xl"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-white truncate">${pl.name}</p>
+            <p class="text-gray-400 text-xs">${pl.songs ? pl.songs.length : 0} songs</p>
+          </div>
+        </div>
+        ${isInPlaylist ? 
+          '<i class="fa-solid fa-check-circle text-green-400 text-xl"></i>' : 
+          '<i class="fa-solid fa-plus-circle text-gray-400 hover:text-green-400 text-xl transition-colors"></i>'
+        }
+      `;
+      
+      playlistPickerList.appendChild(playlistCard);
+    });
+  } catch (error) {
+    console.error("Error loading playlists:", error);
+    playlistPickerList.innerHTML = `
+      <div class="text-center py-8">
+        <i class="fa-solid fa-exclamation-circle text-red-500 text-4xl mb-3"></i>
+        <p class="text-red-400 text-sm">Failed to load playlists</p>
+        <p class="text-gray-500 text-xs mt-1">Please try again</p>
       </div>
     `;
-  });
+  }
 }
 
-// add the current song to clicked playlist
-async function addSongToPlaylist(playlistId, songId) {
-  const res = await fetch(`${API_BASE}/playlists/${playlistId}/add`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ songId })
-  });
-
-  if (res.ok) {
-    closePlaylistPicker();
-  } else {
-    alert("Failed to add song.");
+// Add song to playlist
+async function addSongToPlaylist(playlistId, songId, isAlreadyInPlaylist) {
+  if (isAlreadyInPlaylist) {
+    showNotification("Song is already in this playlist", "info");
+    return;
   }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/playlists/${playlistId}/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ songId })
+    });
+
+    if (res.ok) {
+      showNotification("Added to playlist!", "success");
+      closePlaylistPicker();
+    } else {
+      const error = await res.json();
+      showNotification(error.message || "Failed to add song", "error");
+    }
+  } catch (error) {
+    console.error("Error adding song:", error);
+    showNotification("Failed to add song to playlist", "error");
+  }
+}
+
+// Create new playlist from picker
+window.createNewPlaylistFromPicker = async function() {
+  const name = prompt("Enter playlist name:");
+  if (!name || !name.trim()) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/playlists`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim() })
+    });
+
+    if (res.ok) {
+      const playlist = await res.json();
+      showNotification(`Playlist "${playlist.name}" created!`, "success");
+      
+      // Reload playlists
+      const currentSong = window.Player ? window.Player.getCurrentSong() : null;
+      if (currentSong && currentSong.id) {
+        await loadPlaylistsForPicker(currentSong.id);
+      }
+    } else {
+      const error = await res.json();
+      showNotification(error.message || "Failed to create playlist", "error");
+    }
+  } catch (error) {
+    console.error("Error creating playlist:", error);
+    showNotification("Failed to create playlist", "error");
+  }
+};
+
+// Show notification
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `
+    fixed top-20 left-1/2 transform -translate-x-1/2 z-[60]
+    px-6 py-3 rounded-full shadow-2xl
+    flex items-center space-x-2
+    animate-fade-in-down
+    ${type === "success" ? "bg-green-600" : type === "error" ? "bg-red-600" : "bg-blue-600"}
+  `;
+  
+  notification.innerHTML = `
+    <i class="fa-solid fa-${type === "success" ? "check" : type === "error" ? "exclamation" : "info"}-circle text-white"></i>
+    <span class="text-white font-medium">${message}</span>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.transition = "opacity 0.3s";
+    notification.style.opacity = "0";
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Initialize on DOM load
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPlaylistPicker);
+} else {
+  initPlaylistPicker();
 }

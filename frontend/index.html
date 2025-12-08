@@ -855,7 +855,7 @@
 
       <!-- Right Controls -->
       <div class="flex items-center space-x-2 sm:space-x-4 w-1/4 justify-end pr-2 sm:pr-4 text-gray-400">
-        <i class="fas fa-list cursor-pointer text-sm sm:text-base hidden sm:inline"></i>
+        <i class="fas fa-list cursor-pointer text-sm sm:text-base hidden sm:inline" onclick="openPlaylistPicker()"></i>
         <i class="fas fa-headphones cursor-pointer text-sm sm:text-base hidden sm:inline"></i>
         <i class="fas fa-volume-up text-sm sm:text-base"></i>
         <input id="volume" type="range" min="0" max="1" step="0.01" value="1" class="w-16 sm:w-24 accent-green-500 hidden sm:block">
@@ -883,6 +883,9 @@
     </div>
 
 
+<!-- Hidden Audio Element for Player -->
+  <audio id="audio" preload="metadata"></audio>
+  
   <script src="player.js"></script>
   <script src="main.js"></script>
   </body>
