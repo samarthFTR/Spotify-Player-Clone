@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playlist</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+
+<body class="bg-black text-white font-sans flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="p-4 text-xl font-bold">Playlist</header>
+
+  <!-- PLAYLIST INFO -->
+  <section class="px-4 py-2 space-y-1">
+    <h2 id="playlistName" class="text-2xl font-bold"></h2>
+    <p id="playlistCount" class="text-gray-400 text-sm"></p>
+
+    <button id="btnAddSongs"
+      class="mt-3 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-full text-sm font-semibold">
+      + Add Songs
+    </button>
+  </section>
+
+  <!-- SONG LIST -->
+  <section id="playlistSongs" class="px-4 mt-4 space-y-3"></section>
+
+  <!-- ADD SONGS MODAL -->
+  <div id="modalAddSongs" class="fixed inset-0 bg-black/70 hidden items-center justify-center">
+    <div class="bg-gray-900 p-6 rounded-xl w-[90%] sm:w-[500px] max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-bold mb-4">Add Songs</h2>
+
+      <div id="allSongsList" class="space-y-3"></div>
+
+      <button id="closeModal"
+        class="w-full mt-4 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- PLAYER -->
+  <footer id="player-container" class="mt-auto"></footer>
+
+  <script src="player.js"></script>
+  <script src="innerplaylists.js"></script>
+</body>
+</html>

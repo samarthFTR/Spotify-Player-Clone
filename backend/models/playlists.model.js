@@ -2,22 +2,21 @@ import mongoose from "mongoose";
 
 const playlistSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
-    // array of Song IDs
+    // store list of song _ids
     songs: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Song"
       }
-    ],
-
-    // optional: userId (for future authentication)
-    // userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+    ]
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 export default mongoose.model("Playlist", playlistSchema);

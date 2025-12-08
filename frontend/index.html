@@ -812,6 +812,7 @@
       </div>
     </section>
 
+
     <!-- Bottom Navigation -->
     <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 text-white text-xs py-2 px-2 sm:px-6 flex justify-between items-center">
       <div class="flex flex-col items-center"><i class="fas fa-home text-lg sm:text-xl"></i><span class="text-[10px] sm:text-xs"><a href="index.html">Home</a></span></div>
@@ -862,6 +863,25 @@
 
       <audio id="audio" src=""></audio>
     </footer>
+      <!-- PLAYLIST PICKER MODAL -->
+    <div id="playlistPickerModal"
+        class="fixed inset-0 bg-black/60 hidden items-center justify-center">
+      <div class="bg-gray-900 w-[90%] sm:w-[400px] rounded-lg p-5 max-h-[70vh] overflow-y-auto">
+
+        <h2 class="text-xl font-bold mb-4">Add to Playlist</h2>
+
+        <div id="playlistPickerList" class="space-y-3">
+          <!-- Playlists appear here -->
+        </div>
+
+        <button class="mt-4 w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-lg"
+                onclick="closePlaylistPicker()">
+          Cancel
+        </button>
+
+      </div>
+    </div>
+
 
   <script src="player.js"></script>
   <script src="main.js"></script>

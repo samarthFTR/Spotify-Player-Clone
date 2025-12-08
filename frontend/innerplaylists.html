@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Playlist</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+  <!-- header (reuse your app header as needed) -->
+  <header class="px-4 py-3">
+    <a href="playlists.html" class="text-sm text-gray-300 hover:underline">&larr; Back to Playlists</a>
+  </header>
+
+  <main class="px-4 pb-28">
+    <section id="playlistMeta" class="flex items-center gap-4">
+      <img id="playlistCover" src="https://picsum.photos/200" class="w-28 h-28 rounded-lg object-cover">
+      <div>
+        <h1 id="playlistName" class="text-2xl font-bold">Playlist</h1>
+        <p id="playlistCount" class="text-sm text-gray-300">0 songs</p>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-semibold">Songs</h2>
+        <!-- you can implement song search / add UI here -->
+        <button id="openAddSong" class="bg-green-600 px-3 py-1 rounded text-sm">Add song</button>
+      </div>
+
+      <ul id="songList" class="space-y-2">
+        <!-- songs will be appended here by innerplaylists.js -->
+      </ul>
+    </section>
+  </main>
+
+  <!-- clone your footer / player or import the same player markup you use on index.html -->
+  <footer id="playerFooter" class="fixed bottom-0 left-0 right-0 bg-gray-800 px-4 py-3">
+    <!-- minimal footer placeholder if you want to keep same player -->
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img id="footerSongImg" src="https://picsum.photos/70" class="w-12 h-12 rounded-lg">
+        <div>
+          <p id="footerSongTitle" class="text-sm font-semibold">Not Playing</p>
+          <p id="footerSongArtist" class="text-xs text-gray-300">-</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <i class="fa fa-backward"></i>
+        <i class="fa fa-play"></i>
+        <i class="fa fa-forward"></i>
+      </div>
+    </div>
+  </footer>
+
+  <script src="innerplaylists.js"></script>
+</body>
+</html>

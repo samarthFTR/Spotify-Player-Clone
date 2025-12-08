@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE = window.API_BASE || "https://spotify-player-clone-production.up.railway.app";
+  const API_BASE = "http://localhost:5000" || "https://spotify-player-clone-production.up.railway.app";
   const FALLBACK_COVER = "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80";
 
   const state = {
@@ -367,3 +367,86 @@
   window.nextSong = nextSong;
   window.prevSong = previousSong;
 })();
+async function toggleLike(songId) {
+  const heart = document.getElementById("player-like-btn");
+
+  if (!heart.dataset.liked) {
+    // LIKE
+    await fetch(`${API_BASE}/api/liked/${songId}`, { method: "POST" });
+    heart.classList.add("text-green-500");
+    heart.dataset.liked = "true";
+  } else {
+    // UNLIKE
+    await fetch(`${API_BASE}/api/liked/${songId}`, { method: "DELETE" });
+    heart.classList.remove("text-green-500");
+    delete heart.dataset.liked;
+  }
+
+  updateLikedCount();
+}
+
+async function updateLikedCount() {
+  const res = await fetch(`${API_BASE}/api/liked`);
+  const data = await res.json();
+  const counter = document.getElementById("liked-counter");
+  if (counter) counter.innerText = data.length;
+}
+// === PLAYLIST PICKER MODAL ===
+
+const playlistPickerModal = document.getElementById("playlistPickerModal");
+const playlistPickerList = document.getElementById("playlistPickerList");
+
+// open modal
+function openPlaylistPicker() {
+  if (!currentSong || !currentSong._id) {
+    alert("No song is currently playing.");
+    return;
+  }
+  loadPlaylistsForPicker();
+  playlistPickerModal.classList.remove("hidden");
+}
+
+// close modal
+function closePlaylistPicker() {
+  playlistPickerModal.classList.add("hidden");
+}
+
+// load playlists to choose from
+async function loadPlaylistsForPicker() {
+  playlistPickerList.innerHTML = "<p class='text-gray-400 text-sm'>Loading...</p>";
+
+  const res = await fetch(`${API_BASE}/playlists`);
+  const playlists = await res.json();
+
+  playlistPickerList.innerHTML = "";
+
+  playlists.forEach(pl => {
+    playlistPickerList.innerHTML += `
+      <div class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-lg cursor-pointer"
+           onclick="addSongToPlaylist('${pl._id}', '${currentSong._id}')">
+
+        <div>
+          <p class="font-semibold">${pl.name}</p>
+          <p class="text-gray-400 text-xs">${pl.songs.length} songs</p>
+        </div>
+
+        <i class="fa-solid fa-plus text-green-400 text-xl"></i>
+      </div>
+    `;
+  });
+}
+
+// add the current song to clicked playlist
+async function addSongToPlaylist(playlistId, songId) {
+  const res = await fetch(`${API_BASE}/playlists/${playlistId}/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ songId })
+  });
+
+  if (res.ok) {
+    closePlaylistPicker();
+  } else {
+    alert("Failed to add song.");
+  }
+}
