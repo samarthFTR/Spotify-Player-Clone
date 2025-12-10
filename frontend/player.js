@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE = "http://localhost:5000" || "https://spotify-player-clone-a9rr.vercel.app";
+  const API_BASE = "https://spotify-player-clone-a9rr.vercel.app" || "http://localhost:5000";
   const FALLBACK_COVER = "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80";
 
   const state = {
