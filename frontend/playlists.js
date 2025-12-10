@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api" || "https://spotify-player-clone-a9rr.vercel.app";
+const API_BASE = "https://spotify-player-clone-a9rr.vercel.app/api" || "http://localhost:5000/api";
 
 const playlistGrid = document.getElementById("playlistGrid");
 const modal = document.getElementById("modalCreate");
