@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";  // change to railway URL later
+const API_BASE = "http://localhost:5000/api" || "https://spotify-player-clone-a9rr.vercel.app";
 
 const playlistGrid = document.getElementById("playlistGrid");
 const modal = document.getElementById("modalCreate");
