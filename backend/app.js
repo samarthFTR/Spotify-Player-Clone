@@ -14,10 +14,10 @@ app.use(express.json());
 // connect to DB on cold-start / import
 connectDB();
 
-// API routes
-app.use("/api/songs", songRoutes);
-app.use("/api/liked", likedRoutes);
-app.use("/api/playlists", playlistRoutes);
+// API routes (Vercel strips /api prefix before routing to serverless function)
+app.use("/songs", songRoutes);
+app.use("/liked", likedRoutes);
+app.use("/playlists", playlistRoutes);
 
 // optional health-check root for convenience
 app.get("/", (req, res) => {
