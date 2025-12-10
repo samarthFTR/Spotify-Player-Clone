@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000" || "https://spotify-player-clone-a9rr.vercel.app";
+const API_BASE = "https://spotify-player-clone-a9rr.vercel.app" || "http://localhost:5000";
 window.API_BASE = API_BASE;
 
 /*const DEFAULT_COVER = "https://images.unsplash.com/photo-1464375117522-1311d6a5b81a?auto=format&fit=crop&w=600&q=80";
