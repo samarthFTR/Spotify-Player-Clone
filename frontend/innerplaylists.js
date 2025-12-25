@@ -37,7 +37,7 @@ async function loadPlaylist() {
 }
 
 function renderSongs(songs) {
-  songList.innerHTML = "";
+  songList.innerHTML = "" ;
   if (!songs.length) {
     songList.innerHTML = `<li class="text-gray-400">No songs yet</li>`;
     return;
@@ -58,15 +58,43 @@ function renderSongs(songs) {
         <div class="text-xs text-gray-400">${artist}</div>
       </div>
       <div class="flex items-center gap-3">
+        <button class="delete-btn"
+                data-id="${s._id || s.id || s.songId}"
+                title="Remove from playlist">
+          <i class="fa-solid fa-xmark text-white-400"></i>
+        </button>
+
         <button class="like-btn" data-id="${s._id || s.id || s.songId}">
           <i class="fa-regular fa-heart"></i>
         </button>
-        <button class="play-btn" data-src="${s.audioUrl || s.url || ''}" title="Play">
+
+        <button class="play-btn"
+                data-src="${s.audioUrl || s.url || ''}"
+                title="Play">
           <i class="fa fa-play"></i>
         </button>
       </div>
     `;
     songList.appendChild(li);
+    // delete song from playlist
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation(); // 🔥 stop play click
+
+        const songId = btn.dataset.id;
+        const ok = confirm("Remove this song from playlist?");
+        if (!ok) return;
+
+        await fetch(`${API_BASE}/playlists/${playlistId}/remove`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ songId })
+        });
+
+        loadPlaylist(); // refresh UI
+      });
+    });
+
   });
 
   // hook event listeners (example: play or like)
