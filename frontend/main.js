@@ -1,5 +1,6 @@
 const API_BASE = "https://spotify-player-clone-a9rr.vercel.app" || "http://localhost:5000";
 window.API_BASE = API_BASE;
+window.playlistTargetSongId = null;
 
 /*const DEFAULT_COVER = "https://images.unsplash.com/photo-1464375117522-1311d6a5b81a?auto=format&fit=crop&w=600&q=80";
 const FALLBACK_SONGS_DATA = [
@@ -87,11 +88,11 @@ function formatDuration(seconds) {
 }
 
 function createSongCard(song) {
+  console.log("createSongCard called", song.title);
   const card = document.createElement("button");
   card.type = "button";
   card.className = "min-w-[180px] bg-gray-800 rounded-lg p-3 flex-shrink-0 text-left hover:bg-gray-700 transition focus:outline-none";
   card.dataset.songId = song.id;
-
   const coverSrc = song.cover || DEFAULT_COVER;
   const coverImg = document.createElement("img");
   coverImg.src = coverSrc;
@@ -114,6 +115,23 @@ function createSongCard(song) {
   const durationEl = document.createElement("p");
   durationEl.className = "text-gray-500 text-xs";
   durationEl.textContent = formatDuration(song.duration);
+  const coverWrapper = document.createElement("div");
+  coverWrapper.className = "relative";
+
+  const addBtn = document.createElement("div"); // 🔥 NOT a button
+  addBtn.textContent = "+";
+  addBtn.className =
+    "absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white text-sm flex items-center justify-center cursor-pointer hover:bg-green-600 z-10";
+
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // prevent play
+    window.openPlaylistPicker(song.id);
+  });
+
+
+  coverWrapper.appendChild(coverImg);
+  coverWrapper.appendChild(addBtn);
+  card.appendChild(coverWrapper);
 
   card.appendChild(coverImg);
   card.appendChild(titleEl);

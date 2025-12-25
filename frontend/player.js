@@ -408,27 +408,39 @@ function initPlaylistPicker() {
 }
 
 // Open modal with current song info
-window.openPlaylistPicker = async function() {
+// 🔥 UPDATED: can open picker for ANY song
+window.openPlaylistPicker = async function(songOverride = null) {
   if (!playlistPickerModal) initPlaylistPicker();
-  
-  const currentSong = window.Player ? window.Player.getCurrentSong() : null;
-  
-  if (!currentSong || !currentSong.id) {
-    showNotification("No song is currently playing", "error");
+
+  let song = null;
+
+  if (songOverride) {
+    // Song from card click
+    song = window.Player
+      ? window.Player.getQueue().find(s => s.id === songOverride)
+      : null;
+  } else {
+    // Song from player bar
+    song = window.Player ? window.Player.getCurrentSong() : null;
+  }
+
+  if (!song || !song.id) {
+    showNotification("No song selected", "error");
     return;
   }
-  
-  // Update song info in modal
-  if (pickerSongCover) pickerSongCover.src = currentSong.cover || FALLBACK_COVER;
-  if (pickerSongTitle) pickerSongTitle.textContent = currentSong.title || "Unknown";
-  if (pickerSongArtist) pickerSongArtist.textContent = currentSong.artist || "Unknown Artist";
-  
+
+  // Update modal song info
+  if (pickerSongCover) pickerSongCover.src = song.cover || FALLBACK_COVER;
+  if (pickerSongTitle) pickerSongTitle.textContent = song.title || "Unknown";
+  if (pickerSongArtist) pickerSongArtist.textContent = song.artist || "Unknown Artist";
+
   // Show modal
   playlistPickerModal.classList.remove("hidden");
-  
+
   // Load playlists
-  await loadPlaylistsForPicker(currentSong.id);
+  await loadPlaylistsForPicker(song.id);
 };
+
 
 // Close modal
 window.closePlaylistPicker = function() {
@@ -600,3 +612,4 @@ if (document.readyState === "loading") {
 } else {
   initPlaylistPicker();
 }
+
